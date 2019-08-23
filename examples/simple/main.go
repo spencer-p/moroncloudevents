@@ -1,12 +1,3 @@
-# Moron CloudEvents
-
-[![GoDoc](https://godoc.org/github.com/spencer-p/moroncloudevents?status.svg)](https://godoc.org/github.com/spencer-p/moroncloudevents)
-
-Tired of a complex API surface? Moron CloudEvents makes it easy to set up a
-CloudEvent receiver side-by-side with HTTP handlers. Check out this simple
-example:
-
-```go
 package main
 
 import (
@@ -43,4 +34,3 @@ func main() {
 
 	log.Fatal(svr.ListenAndServe())
 }
-```

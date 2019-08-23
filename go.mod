@@ -1,4 +1,4 @@
-module moroncloudevents
+module github.com/spencer-p/moroncloudevents
 
 go 1.12
 
