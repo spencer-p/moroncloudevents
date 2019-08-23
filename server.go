@@ -31,7 +31,7 @@ type ServerConfig struct {
 
 	// ConvertFn is a function to convert non-CloudEvent requests to the CloudEventReceivePath into CloudEvents.
 	// +optional
-	ConvertFn *cloudevents.ConvertFn
+	ConvertFn cloudevents.ConvertFn
 
 	// TransportOptions are forwarded directly to CloudEvent transport construction.
 	// +optional
@@ -56,8 +56,8 @@ type Server struct {
 	*http.ServeMux
 	cetransport *cloudevents.HTTPTransport
 	ceclient    cloudevents.Client
-	cehandler   *cloudeventsclient.ReceiveFull
-	shutdown    *context.CancelFunc
+	cehandler   cloudeventsclient.ReceiveFull
+	shutdown    context.CancelFunc
 }
 
 func NewServer(conf *ServerConfig) (*Server, error) {
@@ -94,7 +94,7 @@ func NewServer(conf *ServerConfig) (*Server, error) {
 		cloudevents.WithTimeNow(),
 	}...)
 	if conf.ConvertFn != nil {
-		cOps = append(cOps, cloudevents.WithConverterFn(*conf.ConvertFn))
+		cOps = append(cOps, cloudevents.WithConverterFn(conf.ConvertFn))
 	}
 	client, err := cloudevents.NewClient(transport, cOps...)
 
@@ -106,7 +106,7 @@ func NewServer(conf *ServerConfig) (*Server, error) {
 }
 
 // HandleCloudEvents sets the handler for CloudEvent receiveing. There can only be one.
-func (s *Server) HandleCloudEvents(handler *cloudeventsclient.ReceiveFull) {
+func (s *Server) HandleCloudEvents(handler cloudeventsclient.ReceiveFull) {
 	s.cehandler = handler
 }
 
@@ -118,13 +118,13 @@ func (s *Server) CloudEventClient() cloudevents.Client {
 // Shutdown will call the cancel function for the server if it is already listening and serving.
 func (s *Server) Shutdown() {
 	if s.shutdown != nil {
-		(*s.shutdown)()
+		s.shutdown()
 	}
 }
 
 // ListenAndServe starts serving the HTTP handlers and CloudEvent receiver, blocking until termination.
 func (s *Server) ListenAndServe() error {
 	ctx, shutdown := context.WithCancel(context.Background())
-	s.shutdown = &shutdown
+	s.shutdown = shutdown
 	return s.ceclient.StartReceiver(ctx, s.cehandler)
 }
